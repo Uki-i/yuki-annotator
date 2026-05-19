@@ -8,6 +8,7 @@
 import streamlit as st
 import json
 import os
+from github import Github
 
 # ============================================================
 # ⚙️ 编码员配置（每个文件唯一不同的部分）
@@ -24,6 +25,21 @@ SAMPLE_END = 999
 SOURCE_DATA_PATH = "260510_resultsV5_final.jsonl"
 RESULT_DATA_PATH = "results_yuki.jsonl"
  #和Source_data_path在同一个文件夹下，之后你需要将该文件发送给我
+
+# ========== GitHub 同步配置 ==========
+GITHUB_TOKEN = st.secrets["GITHUB_TOKEN"]
+GITHUB_REPO = st.secrets["GITHUB_REPO"]
+g = Github(GITHUB_TOKEN)
+repo = g.get_repo(GITHUB_REPO)
+
+def sync_to_github(file_path, commit_msg="Auto sync from Streamlit"):
+    with open(file_path, "r", encoding="utf-8") as f:
+        content = f.read()
+    try:
+        contents = repo.get_contents(file_path)
+        repo.update_file(contents.path, commit_msg, content, contents.sha)
+    except:
+        repo.create_file(file_path, commit_msg, content)
 
 # ============================================================
 # 常量
